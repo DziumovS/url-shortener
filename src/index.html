@@ -177,7 +177,7 @@ async function handleAction() {
     actionButton.disabled = true;
 
     try {
-        const response = await fetch("/short_url", {
+        const response = await fetch("/c", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
