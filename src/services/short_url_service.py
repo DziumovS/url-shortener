@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.db.crud import add_slug_to_db, get_original_url_from_db
 from src.decorators import retry
 from src.utils.shortener import generate_random_slug

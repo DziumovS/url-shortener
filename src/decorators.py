@@ -1,4 +1,4 @@
-import functools
+from functools import wraps
 from collections.abc import Awaitable, Callable
 from typing import TypeVar, ParamSpec
 
@@ -14,7 +14,7 @@ def retry(
 
     def decorator(func: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
 
-        @functools.wraps(func)
+        @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             for attempt in range(attempts):
                 try:

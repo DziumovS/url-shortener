@@ -5,17 +5,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.services.short_url_service import generate_short_url, get_url_by_slug
 from src.api.deps import get_session
 from src.exceptions import SlugAlreadyExistsError, NoOriginalUrlFoundError
+from src.schemas.url import URLInput
+
 
 router = APIRouter()
 
 
 @router.post("/c")
 async def create_slug(
-    original_url: str = Body(embed=True),
+    data: URLInput = Body(...),
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, str]:
     try:
-        new_slug: str = await generate_short_url(original_url, session)
+        new_slug: str = await generate_short_url(data.original_url, session)
     except SlugAlreadyExistsError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

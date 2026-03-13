@@ -14,7 +14,18 @@ async def test_generate_slug_api(ac: AsyncClient) -> None:
     data = response.json()
 
     assert "data" in data
+    assert isinstance(data["data"], str)
     assert len(data["data"]) == 6
+
+
+@pytest.mark.asyncio
+async def test_invalid_url_api(ac: AsyncClient) -> None:
+    response = await ac.post(
+        "/c",
+        json={"original_url": "not-a-url"},
+    )
+
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio

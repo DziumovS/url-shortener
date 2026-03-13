@@ -1,5 +1,6 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.db.database import new_session
 
 
