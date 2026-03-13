@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Linkin — URL Shortener</title>
-
 <style>
 * {
     box-sizing: border-box;
@@ -12,15 +11,14 @@
     margin: 0;
     padding: 0;
 }
-
 body {
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     background: linear-gradient(135deg,#eef2f7,#dce3ec);
+    overflow: hidden;
 }
-
 .window {
     width: 90%;
     max-width: 420px;
@@ -32,14 +30,14 @@ body {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    z-index: 10;
+    position: relative;
 }
-
 .title {
     text-align: center;
     font-weight: 600;
     margin-bottom: 20px;
 }
-
 input {
     width: 100%;
     padding: 14px;
@@ -50,16 +48,13 @@ input {
     margin-bottom: 15px;
     transition: border 0.2s;
 }
-
 input:focus {
     border: 1px solid #4a8cff;
 }
-
 .buttons {
     display: flex;
     gap: 8px;
 }
-
 button {
     border: none;
     border-radius: 10px;
@@ -68,12 +63,10 @@ button {
     cursor: pointer;
     transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s;
 }
-
 button:active {
     transform: translateY(1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-
 .home {
     width: 10%;
     background: #eef1f6;
@@ -83,18 +76,15 @@ button:active {
     font-weight: bold;
     color: #333;
 }
-
 .compress {
     width: 90%;
     background: #4a8cff;
     color: white;
     font-weight: 500;
 }
-
 .compress:hover {
     background: #3d7bf0;
 }
-
 @media (max-width: 480px) {
     .window {
         padding: 20px;
@@ -106,99 +96,72 @@ button:active {
         font-size: 16px;
     }
 }
+#bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
 </style>
 </head>
-
 <body>
-
+<canvas id="bgCanvas"></canvas>
 <div class="window">
-
     <div class="title">Link Shortener</div>
-
-    <input
-        id="urlInput"
-        type="text"
-        placeholder="Paste your URL here"
-        autocomplete="off"
-    />
-
+    <input id="urlInput" type="text" placeholder="Paste your URL here" autocomplete="off" />
     <div class="buttons">
-        <button class="home" id="homeBtn" title="Home">
-            🏠
-        </button>
-
-        <button class="compress" id="actionButton">
-            Compress Link
-        </button>
+        <button class="home" id="homeBtn">🏠</button>
+        <button class="compress" id="actionButton">Compress Link</button>
     </div>
-
 </div>
-
 <script>
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+const NUM_SPRITES = 150;
+const sprites = [];
+const img = new Image();
+img.src = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png";
+class Sprite {
+    constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.layer = Math.random();
+        this.vx = (Math.random() - 0.5) * (0.3 + this.layer * 1.0);
+        this.vy = (Math.random() - 0.5) * (0.3 + this.layer * 1.0);
+        this.size = (48 + Math.random() * 48) * (0.5 + this.layer/2);
+    }
+    draw() {
+        ctx.drawImage(img, this.x, this.y, this.size, this.size);
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if(this.x < -this.size) this.x = width;
+        if(this.x > width) this.x = -this.size;
+        if(this.y < -this.size) this.y = height;
+        if(this.y > height) this.y = -this.size;
+        this.draw();
+    }
+}
+img.onload = () => {
+    for(let i=0;i<NUM_SPRITES;i++) sprites.push(new Sprite());
+    requestAnimationFrame(animate);
+};
+function animate() {
+    ctx.clearRect(0,0,width,height);
+    sprites.forEach(s => s.update());
+    requestAnimationFrame(animate);
+}
+window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+});
 let shortUrl = null;
-
 const input = document.getElementById("urlInput");
 const actionButton = document.getElementById("actionButton");
 const homeButton = document.getElementById("homeBtn");
-
-// Pressing Enter triggers compress
-input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        handleAction();
-    }
-});
-
-// Home button resets form
-homeButton.addEventListener("click", () => {
-    resetForm();
-});
-
-// Animate button press
-actionButton.addEventListener("mousedown", () => {
-    actionButton.style.transform = "translateY(1px)";
-});
-actionButton.addEventListener("mouseup", () => {
-    actionButton.style.transform = "translateY(0)";
-});
-
-async function handleAction() {
-    if (shortUrl) {
-        await navigator.clipboard.writeText(shortUrl);
-        actionButton.innerText = "Copied!";
-        return;
-    }
-
-    const url = input.value.trim();
-
-    if (!url) return;
-
-    actionButton.innerText = "Compressing...";
-    actionButton.disabled = true;
-
-    try {
-        const response = await fetch("/c", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ original_url: url })
-        });
-
-        const data = await response.json();
-
-        shortUrl = `${window.location.origin}/g/${data.data}`;
-
-        input.value = shortUrl;
-
-        actionButton.innerText = "Copy to Clipboard";
-        actionButton.disabled = false;
-    } catch (err) {
-        actionButton.innerText = "Error";
-        actionButton.disabled = false;
-    }
-}
-
 function resetForm() {
     shortUrl = null;
     input.value = "";
@@ -206,7 +169,35 @@ function resetForm() {
     actionButton.innerText = "Compress Link";
     actionButton.disabled = false;
 }
+input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); handleAction(); } });
+homeButton.addEventListener("click", () => resetForm());
+actionButton.addEventListener("click", handleAction);
+async function handleAction() {
+    const url = input.value.trim();
+    if (!url) return;
+    if (shortUrl) {
+        await navigator.clipboard.writeText(shortUrl);
+        actionButton.innerText = "Copied!";
+        return;
+    }
+    actionButton.innerText = "Compressing...";
+    actionButton.disabled = true;
+    try {
+        const response = await fetch("/c", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ original_url: url })
+        });
+        const data = await response.json();
+        shortUrl = `${window.location.origin}/g/${data.data}`;
+        input.value = shortUrl;
+        actionButton.innerText = "Copy to Clipboard";
+        actionButton.disabled = false;
+    } catch {
+        actionButton.innerText = "Error";
+        actionButton.disabled = false;
+    }
+}
 </script>
-
 </body>
 </html>
