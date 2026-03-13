@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.crud import add_slug_to_db, get_original_url_from_db
+from src.db.crud import add_slug_to_db, get_original_url_from_db
 from src.exceptions import SlugAlreadyExistsError
 
 

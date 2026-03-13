@@ -1,7 +1,7 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.service import generate_short_url, get_url_by_slug
+from src.services.short_url_service import generate_short_url, get_url_by_slug
 from src.exceptions import NoOriginalUrlFoundError
 
 

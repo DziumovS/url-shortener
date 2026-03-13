@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from src.main import app
-from src.dependencies import get_session
-from src.database.models import Base
+from src.api.deps import get_session
+from src.db.models import Base
 
 
 engine: AsyncEngine = create_async_engine(

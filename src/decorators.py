@@ -11,7 +11,9 @@ def retry(
     attempts: int,
     exceptions: tuple[type[Exception], ...],
 ) -> Callable[[Callable[P, Awaitable[R]]], Callable[P, Awaitable[R]]]:
+
     def decorator(func: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
+
         @functools.wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             for attempt in range(attempts):
@@ -20,7 +22,6 @@ def retry(
                 except exceptions:
                     if attempt == attempts - 1:
                         raise
-
             raise RuntimeError("Retry failed unexpectedly")
 
         return wrapper

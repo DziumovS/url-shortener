@@ -1,4 +1,4 @@
-from src.shortener import generate_random_slug
+from src.utils.shortener import generate_random_slug
 
 
 def test_generate_random_slug_default() -> None:

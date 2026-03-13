@@ -3,7 +3,7 @@ from sqlalchemy.engine import Result
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.database.models import ShortURL
+from src.db.models import ShortURL
 from src.exceptions import SlugAlreadyExistsError
 
 
@@ -12,10 +12,7 @@ async def add_slug_to_db(
     original_url: str,
     session: AsyncSession,
 ) -> None:
-    new_slug = ShortURL(
-        slug=slug,
-        original_url=original_url
-    )
+    new_slug = ShortURL(slug=slug, original_url=original_url)
     session.add(new_slug)
     try:
         await session.commit()
