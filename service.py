@@ -1,11 +1,11 @@
 from database.crud import add_slug_to_db, get_original_url_from_db
-from exceptions import NoOriginalUrlFoundError
+from exceptions import NoOriginalUrlFoundError, SlugAlreadyExistsError
 from shortener import generate_random_slug
+from decorators import retry
 
 
-async def generate_short_url(
-        original_url: str
-) -> str:
+@retry(10, (SlugAlreadyExistsError,))
+async def generate_short_url(original_url: str) -> str:
     slug = generate_random_slug()
     await add_slug_to_db(slug, original_url)
 

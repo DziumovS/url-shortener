@@ -7,3 +7,7 @@ class ShortenerError(Exception):
 
 class NoOriginalUrlFoundError(ShortenerError):
     pass
+
+
+class SlugAlreadyExistsError(ShortenerError):
+    pass
