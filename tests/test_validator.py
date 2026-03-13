@@ -4,46 +4,42 @@ from pydantic import ValidationError
 from src.schemas.url import URLInput
 
 
-def test_valid_http_url():
-    data = URLInput(original_url="https://google.com")
-    assert data.original_url == "https://google.com"
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://google.com",
+        "http://example.org",
+        "https://sub.domain.com/path",
+        "ftp://ftp.example.com/file.txt",
+        "tg://resolve?domain=telegram",
+        "mailto:test@example.com",
+        "whatsapp://send?phone=123456789",
+    ],
+)
+def test_valid_urls(url):
+    data = URLInput(original_url=url)
+    assert data.original_url == url
 
 
-def test_valid_ftp_url():
-    data = URLInput(original_url="ftp://ftp.example.com/file.txt")
-    assert data.original_url.startswith("ftp://")
-
-
-def test_valid_messenger_url():
-    data = URLInput(original_url="tg://resolve?domain=telegram")
-    assert data.original_url.startswith("tg://")
-
-
-def test_invalid_url():
+@pytest.mark.parametrize(
+    "url",
+    [
+        "javascript:alert(1)",
+        "https://google.com@evil.com",
+        "http://localhost",
+        "http://127.0.0.1",
+        "https://invalid-domain",
+        "not-a-url",
+        "",
+    ],
+)
+def test_invalid_urls(url):
     with pytest.raises(ValidationError):
-        URLInput(original_url="not-a-url")
+        URLInput(original_url=url)
 
 
-def test_invalid_domain():
+def test_too_long_url():
+    url = "https://example.com/" + "a" * 5000
+
     with pytest.raises(ValidationError):
-        URLInput(original_url="https://localhost")
-
-
-def test_invalid_scheme():
-    with pytest.raises(ValidationError):
-        URLInput(original_url="javascript:alert(1)")
-
-
-def test_domain_without_dot():
-    with pytest.raises(ValidationError):
-        URLInput(original_url="https://localhost")
-
-
-def test_valid_mailto():
-    data = URLInput(original_url="mailto:test@example.com")
-    assert data.original_url.startswith("mailto:")
-
-
-def test_credential_injection():
-    with pytest.raises(ValidationError):
-        URLInput(original_url="https://google.com@evil.com")
+        URLInput(original_url=url)
