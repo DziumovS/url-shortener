@@ -9,4 +9,4 @@ class ShortURL(Base):
     __tablename__ = "short_url"
 
     slug: Mapped[str] = mapped_column(primary_key=True)
-    original_url: Mapped[str]
+    original_url: Mapped[str] = mapped_column(unique=True, index=True)
