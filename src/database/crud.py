@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy.engine import Result
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +11,7 @@ async def add_slug_to_db(
     slug: str,
     original_url: str,
     session: AsyncSession,
-):
+) -> None:
     new_slug = ShortURL(
         slug=slug,
         original_url=original_url
@@ -27,7 +28,10 @@ async def get_original_url_from_db(
     session: AsyncSession
 ) -> str | None:
     query = select(ShortURL).filter_by(slug=slug)
-    response = await session.execute(query)
+    response: Result = await session.execute(query)
     result: ShortURL | None = response.scalar_one_or_none()
 
-    return result.original_url if result.original_url else None
+    if result is None:
+        return None
+
+    return result.original_url

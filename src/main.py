@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from collections.abc import AsyncGenerator
 from typing import Annotated
 
 from fastapi import FastAPI, Body, status, HTTPException, Depends
@@ -14,13 +15,13 @@ from src.dependencies import get_session
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app: FastAPI = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,27 +31,30 @@ app.add_middleware(
 )
 
 
-@app.post("/short_url")
+@app.post("/c")
 async def generate_slug(
     original_url: Annotated[str, Body(embed=True)],
     session: Annotated[AsyncSession, Depends(get_session)],
-):
+) -> dict[str, str]:
     try:
-        new_slug = await generate_short_url(original_url, session)
-    except SlugAlreadyExistsError:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to generate slug")
+        new_slug: str = await generate_short_url(original_url, session)
+    except SlugAlreadyExistsError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate slug"
+        ) from exc
 
     return {"data": new_slug}
 
 
-@app.get("/{slug}")
+@app.get("/g/{slug}")
 async def get_short_url(
     slug: str,
     session: Annotated[AsyncSession, Depends(get_session)],
-):
+) -> RedirectResponse:
     try:
-        original_url = await get_url_by_slug(slug, session)
-    except NoOriginalUrlFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        original_url: str = await get_url_by_slug(slug, session)
+    except NoOriginalUrlFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from exc
 
     return RedirectResponse(url=original_url, status_code=status.HTTP_302_FOUND)
