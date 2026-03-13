@@ -42,3 +42,8 @@ def test_domain_without_dot():
 def test_valid_mailto():
     data = URLInput(original_url="mailto:test@example.com")
     assert data.original_url.startswith("mailto:")
+
+
+def test_credential_injection():
+    with pytest.raises(ValidationError):
+        URLInput(original_url="https://google.com@evil.com")

@@ -18,6 +18,9 @@ def is_valid_url(url: str) -> bool:
         if scheme not in ALLOWED_SCHEMES:
             return False
 
+        if "@" in parsed.netloc:
+            return False
+
         if scheme in MESSENGER_SCHEMES:
             return bool(parsed.netloc or parsed.path)
 
