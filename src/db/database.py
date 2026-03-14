@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncEngine, AsyncSession
 
+from src.config import config as c
+
 
 engine: AsyncEngine = create_async_engine(
-    url="postgresql+asyncpg://postgres:postgres@localhost:7432/postgres",
+    url=f"postgresql+asyncpg://{c.POSTGRES_USER}:{c.POSTGRES_PASSWORD}@{c.POSTGRES_HOST}:{c.POSTGRES_EXTERNAL_PORT}/{c.POSTGRES_DB}",
     pool_size=20,
     max_overflow=30
 )

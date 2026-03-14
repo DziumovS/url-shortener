@@ -1,14 +1,39 @@
 services:
   database:
     image: postgres:17
+    container_name: postgres_linkin
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "7432:5432"
+      - "${POSTGRES_EXTERNAL_PORT}:${POSTGRES_INTERNAL_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+
+  redis:
+    image: redis:7
+    container_name: redis_linkin
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379"
+    networks:
+      - mynetwork
+
 
 volumes:
   postgres_data:
+
+networks:
+  mynetwork:
+    driver: bridge

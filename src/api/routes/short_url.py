@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.services.short_url_service import generate_short_url, get_url_by_slug
 from src.api.deps import get_session
-from src.exceptions import SlugAlreadyExistsError, NoOriginalUrlFoundError
+from src.exceptions.exceptions import SlugAlreadyExistsError, NoOriginalUrlFoundError
 from src.schemas.url import URLInput
 
 

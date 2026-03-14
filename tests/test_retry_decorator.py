@@ -1,6 +1,6 @@
 import pytest
 
-from src.decorators import retry
+from src.decorators.decorators import retry
 
 
 class RetryTestError(Exception):
