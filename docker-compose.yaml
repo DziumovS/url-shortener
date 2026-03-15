@@ -1,4 +1,18 @@
 services:
+  app:
+    build: .
+    container_name: shortener_app
+    restart: on-failure
+    depends_on:
+      - database
+      - redis
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    networks:
+      - mynetwork
+
   database:
     image: postgres:17
     container_name: postgres_linkin
@@ -26,10 +40,9 @@ services:
     container_name: redis_linkin
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT}:6379"
+      - "${REDIS_EXTERNAL_PORT}:${REDIS_INTERNAL_PORT}"
     networks:
       - mynetwork
-
 
 volumes:
   postgres_data:

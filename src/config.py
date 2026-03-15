@@ -11,7 +11,8 @@ class Config(BaseSettings):
 
     REDIS_DB: int
     REDIS_HOST: str
-    REDIS_PORT: str
+    REDIS_EXTERNAL_PORT: str
+    REDIS_INTERNAL_PORT: str
 
     REDIS_TTL_SECONDS: int
 
